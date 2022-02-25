@@ -1,7 +1,6 @@
 package ca.qc.bdeb.info;
 
 import java.util.ArrayList;
-import java.io.FileOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.Scanner;
@@ -93,7 +92,18 @@ public class Challenge {
      */
     public Vehicle getVehicle(Character symbol) {
 
-        // INSÉREZ VOTRE CODE ICI
+        Vehicle vehicInventePourLeRetour = new Vehicle('D', 0, null,null);
+
+        for (Vehicle vehicDummy:
+             vehicles) {
+
+            if (symbol == vehicDummy.getSymbol()) {
+                 return vehicDummy;
+            }
+
+        }
+
+        return vehicInventePourLeRetour;
     }
 
     /**
@@ -103,7 +113,7 @@ public class Challenge {
      */
     public boolean isSolved() {
 
-
+    return false;
 
     }
 
@@ -114,11 +124,51 @@ public class Challenge {
      */
     private boolean load() {
 
-        boolean leBooleen = false;
+        vehicles = new ArrayList<>();
 
-        readChallengeFile(number);
+        ArrayList<String> fichierLu = new ArrayList<>();
 
-        return leBooleen;
+        try {
+            File fileobj = new File(number + ".txt");
+            Scanner reader = new Scanner(fileobj);
+            int voitureRouge = 0;
+
+            while(reader.hasNextLine()) {
+                String[] vehicule = ( reader.nextLine().split("[|]") );
+                Orientation or = Orientation.HORIZONTAL;
+                switch (vehicule[3]) { //orientation
+                    case "h":
+                        or = Orientation.VERTICAL;
+                        break;
+                    case "v" :
+                        or = Orientation.HORIZONTAL;
+                }
+                Coordinate coorvehicule = new Coordinate(vehicule[2].charAt(0), vehicule[2].charAt(2)); //coordonnées
+
+                Vehicle vehiculeX = new Vehicle(vehicule[0].charAt(0),
+                        Integer.parseInt(vehicule[1]),
+                        coorvehicule,
+                        or);
+
+                if (vehiculeX.getSymbol() == 'R') {
+                    voitureRouge ++;
+                }
+                vehicles.add(vehiculeX);
+            }
+            if (voitureRouge != 1) {
+                throw new noRedCarException("Il n'y a aucune voiture rouge/il y a plus d'une seule voiture rouge");
+            }
+            reader.close();
+
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            printLastOneCompleted();
+            return false;
+        }
+
+
+        return true;
+
     }
 
     /**
@@ -145,26 +195,80 @@ public class Challenge {
      */
     public MoveResult moveVehicle(Command command) {
 
+        Vehicle vehicABouger = getVehicle(command.getVehiculeCible());
+        ArrayList<Coordinate> coordsABouger = vehicABouger.getCoordinates();
+
         /*
-        ** VÉRIFIER VALIDITÉ (véhicule H (#E/#W) ou V(#N/#S)
+        ** Bloqué ?
+        */
+
+        if (parking[coordsABouger.get(coordsABouger.size() - 1).posX]          //est-ce que cette coordonnée est celle
+                [coordsABouger.get(coordsABouger.size() - 1).posY].getSymbol() //d'une cellule de bordure ?
+                == Settings.BORDER_SYMBOL) {
+            return MoveResult.BLOCKED_BY_BORDER;
+        }
+
+        else if (parking[coordsABouger.get(coordsABouger.size() - 1).posX]     //est-ce que cette coordonnée est celle
+                [coordsABouger.get(coordsABouger.size() - 1).posY].getSymbol() //d'une cellule occupée par un autre
+                != Settings.EMPTY_SYMBOL                                       //véhicule, et non par une bordure ?
+                &&
+                parking[coordsABouger.get(coordsABouger.size() - 1).posX]
+                        [coordsABouger.get(coordsABouger.size() - 1).posY].getSymbol()
+                        != Settings.BORDER_SYMBOL) {
+            return MoveResult.BLOCKED_BY_VEHICLE;
+        }
+
+        else if ((command.getDirection() == Direction.East || command.getDirection() == Direction.West) //*1
+                 && vehicABouger.getOrientation() != Orientation.HORIZONTAL
+                 ||(command.getDirection() == Direction.North || command.getDirection() == Direction.South)
+                && vehicABouger.getOrientation() != Orientation.VERTICAL) {
+            return MoveResult.IMPOSSIBLE_DIRECTION;
+        }
+        //*1 Est-ce que l'utilisateur essaie de bouger le véhicule dans la direction incompatible avec son orientation ?
+
+
+        /*
+        ** La voie est libre ?
         */
 
         switch (command.getDirection()) {
 
             case East:
-                leBonVehic.getCoordinates()
+
+                for (Coordinate coorddummy:
+                     coordsABouger) {
+                    coorddummy.posX += 1;
+                }
               break;
 
             case West:
+                for (Coordinate coorddummy:
+                        coordsABouger) {
+                    coorddummy.posX -= 1;
+                }
               break;
 
             case South:
+                for (Coordinate coorddummy:
+                        coordsABouger) {
+                    coorddummy.posY -= 1;
+                }
               break;
 
             default: //North
+                for (Coordinate coorddummy:
+                        coordsABouger) {
+                    coorddummy.posY += 1;
+                }
               break;
 
         }
+
+        if (parking[7][3].getSymbol() == 'R') { //La voiture rouge est-elle sortie ?
+            return MoveResult.GOT_OUT;
+        }
+
+        return MoveResult.MOVED;
 
     }
 
@@ -197,49 +301,4 @@ public class Challenge {
         System.out.println(Colour.YELLOW + "Félicitations, vous venez de compléter le dernier défi. À la prochaine!");
     }
 
-    public ArrayList<String> readChallengeFile(int compteur) {
-
-        ArrayList<String> fichierLu = new ArrayList<>();
-
-        try {
-            File fileobj = new File(compteur + ".txt");
-            Scanner reader = new Scanner(fileobj);
-            int voitureRouge = 0;
-
-            while(reader.hasNextLine()) {
-                String[] vehicule = ( reader.nextLine().split("|") );
-                Orientation or = Orientation.HORIZONTAL;
-                switch (vehicule[3]) { //orientation
-                    case "h":
-                        or = Orientation.VERTICAL;
-                        break;
-                    case "v" :
-                        or = Orientation.HORIZONTAL;
-                }
-                Coordinate coorvehicule = new Coordinate(vehicule[2].charAt(0), vehicule[2].charAt(2)); //coordonnées
-
-                Vehicle vehiculeX = new Vehicle(vehicule[0].charAt(0),
-                                                Integer.parseInt(vehicule[1]),
-                                                coorvehicule,
-                                                or);
-
-                if (vehiculeX.getSymbol() == 'R') {
-                    voitureRouge ++;
-                }
-                vehicles.add(vehiculeX);
-            }
-            if (voitureRouge != 1) {
-                throw new noRedCarException("Il n'y a aucune voiture rouge/il y a plus d'une seule voiture rouge");
-            }
-            reader.close();
-
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            printLastOneCompleted();
-        }
-
-
-        return fichierLu;
-
-    }
 }

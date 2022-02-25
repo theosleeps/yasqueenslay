@@ -54,13 +54,18 @@ public class Prompt {
         boolean vehicExists = false;
         Direction direc = detectionDirection(cmd.charAt(1));
 
-        for (Vehicle vehicTest: //le véhicule existe-t-il dans ce niveau ?
+        /*for (Vehicle vehicTest: //le véhicule existe-t-il dans ce niveau ?
              challenge.getVehicles()) {
 
             if (cmd.charAt(0) == vehicTest.getSymbol()) {
                 vehicExists = true;
             }
 
+        }*/
+
+        Vehicle vehicTest = challenge.getVehicle(cmd.charAt(0)); //le véhicule existe-t-il dans ce niveau ?
+        if (vehicTest.getSymbol() != 'D') {
+            vehicExists = true;
         }
 
         if (vehicExists && direc != Direction.Invalid) { //validation

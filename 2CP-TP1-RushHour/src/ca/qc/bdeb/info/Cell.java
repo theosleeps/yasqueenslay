@@ -12,6 +12,10 @@ public class Cell {
 
     }
 
+    public char getSymbol() {
+        return symbol;
+    }
+
     @Override
     public String toString() {
         return ("" + couleur + symbol);

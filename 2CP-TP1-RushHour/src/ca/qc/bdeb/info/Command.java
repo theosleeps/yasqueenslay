@@ -37,7 +37,8 @@ public class Command {
 
     /*
     ** Autre(s) méthode(s)
-     */
+    */
+
     public boolean isQuit() {
         return quitter;
     }
