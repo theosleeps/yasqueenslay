@@ -52,9 +52,7 @@ public class Prompt {
     private boolean cmdValide(String cmd, Challenge challenge) {
 
         boolean vehicExists = false;
-        char vehic;
         Direction direc = detectionDirection(cmd.charAt(1));
-        vehic = cmd.charAt(0);
 
         for (Vehicle vehicTest: //le véhicule existe-t-il dans ce niveau ?
              challenge.getVehicles()) {

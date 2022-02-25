@@ -148,10 +148,11 @@ public class Challenge {
         /*
         ** VÉRIFIER VALIDITÉ (véhicule H (#E/#W) ou V(#N/#S)
         */
+
         switch (command.getDirection()) {
 
             case East:
-
+                leBonVehic.getCoordinates()
               break;
 
             case West:
@@ -171,6 +172,8 @@ public class Challenge {
      * Affiche le défi (titre et stationnement).
      */
     public void print() {
+
+        buildParking();
 
         for (int i = 0; i < parking.length; i++) { //
 

@@ -32,6 +32,7 @@ public class Vehicle {
         this.length = length;
         this.position = position;
         this.orientation = orientation;
+
     }
 
     /**
