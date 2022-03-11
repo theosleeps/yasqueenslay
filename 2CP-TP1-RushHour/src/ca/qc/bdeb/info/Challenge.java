@@ -291,14 +291,12 @@ public class Challenge {
 
         }
 
-        for (Vehicle vehix:
-             vehicles) {
-            if (vehix.getSymbol() == 'R' && command.getVehiculeCible() == 'R') {
-                if (vehix.getCoordinates().get(1).posX == 6 && command.getDirection() == Direction.East) {
-                    return MoveResult.GOT_OUT;
-                }
+        buildParking();
+
+            if (parking[3][7].getSymbol() == 'R') {
+                return MoveResult.GOT_OUT;
             }
-        }
+
 
         return MoveResult.MOVED;
 
