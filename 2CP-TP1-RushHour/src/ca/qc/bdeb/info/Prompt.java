@@ -50,31 +50,19 @@ public class Prompt {
     }
 
     private boolean cmdValide(String cmd, Challenge challenge) {
-
         boolean vehicExists = false;
         Direction direc = detectionDirection(cmd.charAt(1));
 
-        /*for (Vehicle vehicTest: //le véhicule existe-t-il dans ce niveau ?
-             challenge.getVehicles()) {
+        for (int i = 0; i < challenge.getVehicles().size(); i++) {
 
-            if (cmd.charAt(0) == vehicTest.getSymbol()) {
+            if (challenge.getVehicles().get(i).getSymbol() == cmd.charAt(0)) {                   //Si ce véhicule existe
                 vehicExists = true;
             }
 
-        }*/
-
-        Vehicle vehicTest = challenge.getVehicle(cmd.charAt(0)); //le véhicule existe-t-il dans ce niveau ?
-        if (vehicTest.getSymbol() != 'D') {
-            vehicExists = true;
         }
 
-        if (vehicExists && direc != Direction.Invalid) { //validation
-            return true;
-        }
-
-        else {
-            return false;
-        }
+        //validation
+        return vehicExists && direc != Direction.Invalid;
 
     }
 
@@ -99,6 +87,7 @@ public class Prompt {
                 break;
             case 'W':
                 direc = Direction.West;
+                break;
             case 'Q' :
                 System.exit(0);
                 break;

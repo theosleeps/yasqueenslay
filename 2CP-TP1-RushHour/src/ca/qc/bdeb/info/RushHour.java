@@ -34,8 +34,10 @@ public class RushHour {
             challenge.print();
             Command command = prompt.readUserCommand(challenge);
 
-            if (command.isQuit())
+            if (command.isQuit()) {
                 break;
+            }
+
 
             MoveResult result = challenge.moveVehicle(command);
             playSFX(sounds, result);
@@ -83,6 +85,5 @@ public class RushHour {
      */
     private static void playSFX(Audio sounds, MoveResult result) {
 
-        // INSÉREZ VOTRE CODE ICI
     }
 }

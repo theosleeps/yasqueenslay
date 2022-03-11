@@ -3,6 +3,7 @@ package ca.qc.bdeb.info;
 import java.util.ArrayList;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.Arrays;
 import java.util.Scanner;
 
 
@@ -54,11 +55,11 @@ public class Challenge {
         for (int i = 0; i < parking.length; i++) {
             for (int j = 0; j < parking[i].length; j++) {
 
-                if (i == 0 || j == 0 || i == 7 || j == 7) {             //bordure
+                if (i == 0 || j == 0 || i == 7|| j == 7  && i != 3) {             //bordure
                     parking[i][j] = new Cell(Settings.BORDER_SYMBOL);
                 }
 
-                else if (i == 7 && j == 3) {                            //sortie
+                else if (i == 3 && j == 7) {                            //sortie
                     parking[i][j] = new Cell(Settings.EMPTY_SYMBOL);
                 }
 
@@ -77,7 +78,7 @@ public class Challenge {
             char symbole = vehicles.get(k).getSymbol();     //en conséquence
 
             for ( Coordinate coord : vehicles.get(k).getCoordinates() ) {  //remplace la cellule vide par
-                parking[coord.posX][coord.posY] = new Cell(symbole);       //une cellule avec le bon symbole
+                parking[coord.posY][coord.posX] = new Cell(symbole);       //une cellule avec le bon symbole
             }
 
         } //
@@ -113,6 +114,10 @@ public class Challenge {
      */
     public boolean isSolved() {
 
+        if (parking[3][7].getSymbol() == 'R') { //La voiture rouge est-elle sortie ?
+            return true;
+        }
+
     return false;
 
     }
@@ -137,13 +142,14 @@ public class Challenge {
                 String[] vehicule = ( reader.nextLine().split("[|]") );
                 Orientation or = Orientation.HORIZONTAL;
                 switch (vehicule[3]) { //orientation
-                    case "h":
+                    case "V":
                         or = Orientation.VERTICAL;
                         break;
-                    case "v" :
+                    case "H" :
                         or = Orientation.HORIZONTAL;
                 }
-                Coordinate coorvehicule = new Coordinate(vehicule[2].charAt(0), vehicule[2].charAt(2)); //coordonnées
+                Coordinate coorvehicule = new Coordinate(Character.getNumericValue(vehicule[2].charAt(0)),
+                        Character.getNumericValue(vehicule[2].charAt(2))); //coordonnées
 
                 Vehicle vehiculeX = new Vehicle(vehicule[0].charAt(0),
                         Integer.parseInt(vehicule[1]),
@@ -198,34 +204,55 @@ public class Challenge {
         Vehicle vehicABouger = getVehicle(command.getVehiculeCible());
         ArrayList<Coordinate> coordsABouger = vehicABouger.getCoordinates();
 
+
+        //vérifier en premier si l'orientaton du véhicule et la direction sont compatibles
+        if ((command.getDirection() == Direction.East || command.getDirection() == Direction.West)
+                && vehicABouger.getOrientation() != Orientation.HORIZONTAL
+
+                ||(command.getDirection() == Direction.North || command.getDirection() == Direction.South)
+                && vehicABouger.getOrientation() != Orientation.VERTICAL) {
+            System.out.println("Impossible direction");
+            return MoveResult.IMPOSSIBLE_DIRECTION;
+        }
+
+        Coordinate coordAVerif; //La coordonnée que l'on vérifiera
+
+        switch (command.getDirection()) {
+
+            case East:
+                coordAVerif = new Coordinate(coordsABouger.get(coordsABouger.size() - 1).posX + 1,
+                                             coordsABouger.get(coordsABouger.size() - 1).posY);
+              break;
+            case West:
+                coordAVerif = new Coordinate(coordsABouger.get(0).posX - 1,
+                                             coordsABouger.get(coordsABouger.size() - 1).posY);
+              break;
+            case North:
+                coordAVerif = new Coordinate(coordsABouger.get(coordsABouger.size() - 1).posX,
+                        coordsABouger.get(0).posY - 1);
+              break;
+            default: //South
+                coordAVerif = new Coordinate(coordsABouger.get(coordsABouger.size() - 1).posX,
+                        coordsABouger.get(coordsABouger.size() - 1).posY + 1);
+              break;
+
+
+        }
+
         /*
         ** Bloqué ?
         */
 
-        if (parking[coordsABouger.get(coordsABouger.size() - 1).posX]          //est-ce que cette coordonnée est celle
-                [coordsABouger.get(coordsABouger.size() - 1).posY].getSymbol() //d'une cellule de bordure ?
-                == Settings.BORDER_SYMBOL) {
+        if (parking[coordAVerif.posY][coordAVerif.posX].getSymbol() == Settings.BORDER_SYMBOL) {
+            System.out.println("Ce véhicule est coincé par la bordure dans cette direction.");
             return MoveResult.BLOCKED_BY_BORDER;
         }
 
-        else if (parking[coordsABouger.get(coordsABouger.size() - 1).posX]     //est-ce que cette coordonnée est celle
-                [coordsABouger.get(coordsABouger.size() - 1).posY].getSymbol() //d'une cellule occupée par un autre
-                != Settings.EMPTY_SYMBOL                                       //véhicule, et non par une bordure ?
-                &&
-                parking[coordsABouger.get(coordsABouger.size() - 1).posX]
-                        [coordsABouger.get(coordsABouger.size() - 1).posY].getSymbol()
-                        != Settings.BORDER_SYMBOL) {
-            return MoveResult.BLOCKED_BY_VEHICLE;
+        else if (parking[coordAVerif.posY][coordAVerif.posX].getSymbol() != Settings.EMPTY_SYMBOL &&
+                 parking[coordAVerif.posY][coordAVerif.posX].getSymbol() != Settings.BORDER_SYMBOL ) {
+            System.out.println("Ce véhicule est coincé par un autre véhicule dans cette direction.");
+            return MoveResult.BLOCKED_BY_VEHICLE; //La cellule n'est pas vide, mais ce n'est pas une bordure non plus.
         }
-
-        else if ((command.getDirection() == Direction.East || command.getDirection() == Direction.West) //*1
-                 && vehicABouger.getOrientation() != Orientation.HORIZONTAL
-                 ||(command.getDirection() == Direction.North || command.getDirection() == Direction.South)
-                && vehicABouger.getOrientation() != Orientation.VERTICAL) {
-            return MoveResult.IMPOSSIBLE_DIRECTION;
-        }
-        //*1 Est-ce que l'utilisateur essaie de bouger le véhicule dans la direction incompatible avec son orientation ?
-
 
         /*
         ** La voie est libre ?
@@ -251,21 +278,26 @@ public class Challenge {
             case South:
                 for (Coordinate coorddummy:
                         coordsABouger) {
-                    coorddummy.posY -= 1;
+                    coorddummy.posY += 1;
                 }
               break;
 
             default: //North
                 for (Coordinate coorddummy:
                         coordsABouger) {
-                    coorddummy.posY += 1;
+                    coorddummy.posY -= 1;
                 }
               break;
 
         }
 
-        if (parking[7][3].getSymbol() == 'R') { //La voiture rouge est-elle sortie ?
-            return MoveResult.GOT_OUT;
+        for (Vehicle vehix:
+             vehicles) {
+            if (vehix.getSymbol() == 'R' && command.getVehiculeCible() == 'R') {
+                if (vehix.getCoordinates().get(1).posX == 6 && command.getDirection() == Direction.East) {
+                    return MoveResult.GOT_OUT;
+                }
+            }
         }
 
         return MoveResult.MOVED;
@@ -280,13 +312,14 @@ public class Challenge {
         buildParking();
 
         for (int i = 0; i < parking.length; i++) { //
+            String line = "";
 
             for (int j = 0; j < parking[i].length; j++) { ////
 
-                parking[i][j].toString();
+                line += (parking[i][j].toString() + "  ");
 
             } ////
-
+            System.out.println(line);
         } //
 
     }

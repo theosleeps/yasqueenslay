@@ -44,8 +44,9 @@ public class Vehicle {
     public ArrayList<Coordinate> getCoordinates() {
 
         ArrayList<Coordinate> cellulesOccupees = new ArrayList<>();
+        cellulesOccupees.add(position);
 
-        for (int i = 0; i < length; i++) {
+        for (int i = 0; i < (length - 1); i++) {
 
             if (orientation == Orientation.HORIZONTAL) {
                 Coordinate dummy = new Coordinate(position.posX + 1, position.posY);
@@ -53,7 +54,7 @@ public class Vehicle {
             }
 
             else if (orientation == Orientation.VERTICAL) {
-                Coordinate dummy = new Coordinate(position.posX, position.posY + 1);
+                Coordinate dummy = new Coordinate(position.posX, position.posY + 1 + i);
                 cellulesOccupees.add(dummy);
             }
 

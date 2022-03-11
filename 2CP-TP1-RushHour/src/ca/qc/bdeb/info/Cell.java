@@ -18,7 +18,7 @@ public class Cell {
 
     @Override
     public String toString() {
-        return ("" + couleur + symbol);
+        return ("" + symbol);
     }
 
 }
